@@ -8,6 +8,16 @@ class BasePage():
 
         self.driver = driver
 
+    @allure.step("Получаем нужную страницу")
+    def get_urls(self, element):
+          
+        self.driver.get(element)
+
+    @allure.step("Получаем аттрибута")
+    def get_attribute(self, element):
+         
+         self.get_attribute(element)
+
     @allure.step("Скролим до нужного элемента")
     def scroll_to_the_element(self, locator):
 
@@ -28,7 +38,7 @@ class BasePage():
     def wait_url(self, url):
 
         WebDriverWait(self.driver, 15).until(EC.url_contains(url))
-
+    
     @allure.step("Жмем на элемент")
     def click_to_element(self, element):
           
@@ -37,7 +47,7 @@ class BasePage():
     @allure.step('Ищем элемент')
     def find_element(self, element):
 
-        self.driver.find_element(*element)
+        return self.driver.find_element(*element)
 
     @allure.step('Вводим значение')
     def send_keys(self, locator, element):
@@ -50,15 +60,52 @@ class BasePage():
         element = self.driver.find_element(*locator)
         
         return element.is_displayed()
-
-    @allure.step("Смена окна")
-    def switch_window(self):
-
-        windows = self.driver.window_handles
-        
-        self.driver.switch_to.window(windows[-1])
+    
+    @allure.step("Ждем и находим элемент")
+    def find_element_with_wait(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(locator)
+        )
 
     @allure.step('Проверяем URL')    
     def current_url(self, locator):
         
         return self.driver.current_url == locator
+    
+    @allure.step('Перетаскиваем эелемент')
+    def drag_and_drop(self, source_locator, target_locator):
+        """
+        Перетаскивает элемент из source_locator в target_locator с использованием JavaScript.
+        :param source_locator: Локатор элемента, который нужно перетащить.
+        :param target_locator: Локатор элемента, куда нужно перетащить.
+        """
+        self.find_element_with_wait(source_locator)
+        self.find_element_with_wait(target_locator)
+
+        element_from = self.driver.find_element(*source_locator)
+        element_to = self.driver.find_element(*target_locator)
+
+        self.driver.execute_script("""
+            var source = arguments[0];
+            var target = arguments[1];
+
+            var evt = document.createEvent("DragEvent");
+            evt.initMouseEvent("dragstart", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            source.dispatchEvent(evt);
+
+            evt = document.createEvent("DragEvent");
+            evt.initMouseEvent("dragenter", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            target.dispatchEvent(evt);
+
+            evt = document.createEvent("DragEvent");
+            evt.initMouseEvent("dragover", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            target.dispatchEvent(evt);
+
+            evt = document.createEvent("DragEvent");
+            evt.initMouseEvent("drop", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            target.dispatchEvent(evt);
+
+            evt = document.createEvent("DragEvent");
+            evt.initMouseEvent("dragend", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            source.dispatchEvent(evt);
+        """, element_from, element_to)
