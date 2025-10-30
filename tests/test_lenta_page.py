@@ -13,18 +13,18 @@ import allure
 class TestConstructPage():
     @allure.title("Проверка кнопки Лента заказов в шапке сайта")
     def test_lenta_button_click(self, driver):
-        
-        base_page = BasePage(driver)
+    
+       base_page = BasePage(driver)
 
-        base_page.get_urls(Urls.STELLAR_BURGER_CONSTUCT)
+       base_page.get_urls(Urls.STELLAR_BURGER_CONSTUCT)
 
-        base_page.click_to_element(BasePageLocators.LENTA_ORDERS)   
+       base_page.click_to_element_js(BasePageLocators.LENTA_ORDERS) 
 
-        assert base_page.current_url("https://stellarburgers.education-services.ru/feed")
+       assert base_page.current_url("https://stellarburgers.education-services.ru/feed")
 
     @pytest.mark.parametrize("locator", [LentaPageLocators.COUNT_ALL_TIME,LentaPageLocators.COUNT_TO_DAY])
     @allure.title("Увеличение счетчика после создания заказа")
-    def test_create_order_increases_counter(self, driver, locator):
+    def test_create_order_increases_counter(self, driver,login_user, locator):
         profile_page = Profile(driver)
         construct_page = Construct(driver)
         lenta_page = Lenta(driver)
@@ -35,8 +35,9 @@ class TestConstructPage():
         count_before = int(lenta_page.find_element(locator).text)
     
         lenta_page.click_to_element(BasePageLocators.BUTTON_CONSTRUCT)
-    
-        profile_page.login_in_main_page()
+
+        profile_page.login_in_main_page(login_user["email"], login_user["password"])
+
         construct_page.create_order_burger(ConstructPageLocators.BUN_INGRIDIENT)
     
         construct_page.wait_element(ConstructPageLocators.NUMBER_ORDER)
@@ -58,7 +59,7 @@ class TestConstructPage():
         assert count_after > count_before
 
     @allure.title("Проверка добавления номера созданного заказа в список в работе")
-    def test_create_order_list_order_add_number_order(self, driver):
+    def test_create_order_list_order_add_number_order(self, driver, login_user):
 
         profile_page = Profile(driver)
         construct_page = Construct(driver)
@@ -69,7 +70,7 @@ class TestConstructPage():
         orders_before = [order.text for order in lenta_page.find_elements(LentaPageLocators.LIST_ORDER)]
     
         lenta_page.click_to_element(BasePageLocators.BUTTON_CONSTRUCT)
-        profile_page.login_in_main_page()
+        profile_page.login_in_main_page(login_user["email"], login_user["password"])
         construct_page.create_order_burger(ConstructPageLocators.BUN_INGRIDIENT)
 
         construct_page.wait_element(ConstructPageLocators.NUMBER_ORDER)
