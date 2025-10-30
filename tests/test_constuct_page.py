@@ -4,10 +4,11 @@ from pages.construct_page import Construct
 from pages.base_page import BasePage
 from locators.construct_page_locators import ConstructPageLocators
 import pytest
+import allure
 
 
 class TestConstructPage():
-
+    @allure.title("Проверка кнопки Конструктор в шапке сайта")
     def test_construct_button_click(self, driver):
         
         base_page = BasePage(driver)
@@ -18,6 +19,7 @@ class TestConstructPage():
 
         assert base_page.element_is_displayed(ConstructPageLocators.TEXT_BURGER_CONSTRUCT)
 
+    @allure.title("Проверка открытия окна ингредиента")
     def test_window_ingridient_in_display(self, driver):
 
         construct_page = Construct(driver)
@@ -30,6 +32,7 @@ class TestConstructPage():
 
         assert construct_page.element_is_displayed(ConstructPageLocators.WINDOW_INGRIDIENT)
 
+    @allure.title("Проверка закрытия окна ингредиента")
     def test_close_window_ingridient_click_the_cross(self, driver):
 
         construct_page = Construct(driver)
@@ -50,8 +53,9 @@ class TestConstructPage():
 
         assert "Modal_modal_opened__3ISw4" not in class_name
 
+    @allure.title("Проверка добавления ингредиента в заказ")
     def test_ingredient_added_to_an_order(self, driver):
-        
+
         construct_page = Construct(driver)
 
         construct_page.get_urls("https://stellarburgers.education-services.ru/")

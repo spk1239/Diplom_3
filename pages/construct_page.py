@@ -1,7 +1,7 @@
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from pages.base_page import BasePage
 import allure
+from locators.construct_page_locators import ConstructPageLocators
+from pages.base_page import BasePage
+
 
 class Construct(BasePage):
 
@@ -9,5 +9,9 @@ class Construct(BasePage):
 
         super().__init__(driver)
 
+    @allure.title("Создание заказа")
+    def create_order_burger(self,element):
 
-   
+        self.drag_and_drop(element, ConstructPageLocators.BURGER_ORDER_LIST)
+
+        self.click_to_element(ConstructPageLocators.BUTTON_ORDER)

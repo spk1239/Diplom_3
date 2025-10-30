@@ -2,7 +2,7 @@ import pytest
 from selenium import webdriver
 
 # Меняй здесь браузер
-BROWSER = "chrome"  # или "firefox"
+BROWSER = "chrome" # или "firefox"
 
 @pytest.fixture
 def driver():

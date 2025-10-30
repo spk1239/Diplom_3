@@ -1,0 +1,1 @@
+{"name": "Проверка добавления ингредиента в заказ", "status": "skipped", "start": 1761829340533, "stop": 1761829340533, "uuid": "0a8b4c99-54a2-43dc-84c8-919d92a24b01", "testCaseId": "5a43ba46c956910398289881b66fb978", "fullName": "tests.test_constuct_page.TestConstructPage#test_ingredient_added_to_an_order", "titlePath": ["tests", "test_constuct_page.py", "TestConstructPage"]}

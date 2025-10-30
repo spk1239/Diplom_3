@@ -109,3 +109,25 @@ class BasePage():
             evt.initMouseEvent("dragend", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             source.dispatchEvent(evt);
         """, element_from, element_to)
+
+    @allure.step("Кликаем на элемент через JavaScript")
+    def click_to_element_js(self, element):
+        element = self.driver.find_element(*element)
+        self.driver.execute_script("arguments[0].click();", element)
+
+    @allure.step("Ждем исчезновения элемента")
+    def wait_element_invisible(self, locator):
+        WebDriverWait(self.driver, 15).until(EC.invisibility_of_element_located(locator))
+
+    @allure.step("Ждем кликабельности элемента")
+    def wait_element_clickable(self, locator):
+        WebDriverWait(self.driver, 15).until(EC.element_to_be_clickable(locator))
+
+    @allure.step('Ищем элементы')
+    def find_elements(self, locator):
+        return self.driver.find_elements(*locator)
+    
+    @allure.step("Ждем изменения текста элемента")
+    def wait_text_changed(self, locator, initial_text, timeout=15):
+        WebDriverWait(self.driver, timeout).until(
+            lambda driver: driver.find_element(*locator).text != initial_text)
