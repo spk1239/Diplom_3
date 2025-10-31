@@ -1,97 +1,61 @@
 from urls import Urls
-from locators.base_page_locators import BasePageLocators
 from pages.base_page import BasePage
 from pages.construct_page import Construct
 from pages.profile_page import Profile
 from pages.lenta_page import Lenta
-from locators.construct_page_locators import ConstructPageLocators
-from locators.lenta_page_locators import LentaPageLocators
 import pytest
 import allure
 
-
-class TestConstructPage():
-    @allure.title("Проверка кнопки Лента заказов в шапке сайта")
+class TestLentaPage():
+    @allure.title("Проверка перехода в Ленту заказов через кнопку в шапке сайта")
     def test_lenta_button_click(self, driver):
-    
-       base_page = BasePage(driver)
+        base_page = BasePage(driver)
+        base_page.get_urls(Urls.STELLAR_BURGER_CONSTUCT)
+        base_page.click_lenta_button()
+        assert base_page.current_url(Urls.STELLAR_BURGER_LENTA)
 
-       base_page.get_urls(Urls.STELLAR_BURGER_CONSTUCT)
-
-       base_page.click_to_element_js(BasePageLocators.LENTA_ORDERS) 
-
-       assert base_page.current_url("https://stellarburgers.education-services.ru/feed")
-
-    @pytest.mark.parametrize("locator", [LentaPageLocators.COUNT_ALL_TIME,LentaPageLocators.COUNT_TO_DAY])
-    @allure.title("Увеличение счетчика после создания заказа")
-    def test_create_order_increases_counter(self, driver,login_user, locator):
+    @pytest.mark.parametrize("counter_method", ["get_all_time_order_count", "get_today_order_count"])
+    @allure.title("Проверка увеличения счетчика заказов после создания нового заказа")
+    def test_create_order_increases_counter(self, driver, login_user, counter_method):
         profile_page = Profile(driver)
         construct_page = Construct(driver)
         lenta_page = Lenta(driver)
 
         lenta_page.get_urls(Urls.STELLAR_BURGER_LENTA)
-    
-        lenta_page.wait_element(locator)
-        count_before = int(lenta_page.find_element(locator).text)
-    
-        lenta_page.click_to_element(BasePageLocators.BUTTON_CONSTRUCT)
-
+        count_before = getattr(lenta_page, counter_method)()
+        construct_page.click_construct_button()
         profile_page.login_in_main_page(login_user["email"], login_user["password"])
-
-        construct_page.create_order_burger(ConstructPageLocators.BUN_INGRIDIENT)
-    
-        construct_page.wait_element(ConstructPageLocators.NUMBER_ORDER)
-
-        construct_page.click_to_element_js(ConstructPageLocators.CLOSE_BUTTON_ORDER_WINDOW)
-
-        construct_page.wait_element_clickable(BasePageLocators.LENTA_ORDERS)
-        construct_page.click_to_element_js(BasePageLocators.LENTA_ORDERS)
-
-        lenta_page.wait_url(Urls.STELLAR_BURGER_LENTA)
-        lenta_page.wait()
-        lenta_page.wait_element(locator)
-    
-    
-        count_after = int(lenta_page.find_element(locator).text)
-
-        lenta_page.wait()
-
+        construct_page.add_bun_to_order() 
+        construct_page.wait_for_order_number()
+        construct_page.close_order_window()
+        construct_page.wait_lenta_button_clickable()
+        construct_page.click_lenta_button()
+        construct_page.wait_url(Urls.STELLAR_BURGER_LENTA)
+        construct_page.wait()
+        count_after = getattr(lenta_page, counter_method)()
+        construct_page.wait()
         assert count_after > count_before
 
-    @allure.title("Проверка добавления номера созданного заказа в список в работе")
+    @allure.title("Проверка добавления номера заказа в список 'В работе'")
     def test_create_order_list_order_add_number_order(self, driver, login_user):
-
         profile_page = Profile(driver)
         construct_page = Construct(driver)
         lenta_page = Lenta(driver)
 
-        lenta_page.get_urls(Urls.STELLAR_BURGER_LENTA)
-        lenta_page.wait_element(LentaPageLocators.LIST_ORDER)
-        orders_before = [order.text for order in lenta_page.find_elements(LentaPageLocators.LIST_ORDER)]
-    
-        lenta_page.click_to_element(BasePageLocators.BUTTON_CONSTRUCT)
+        construct_page.get_urls(Urls.STELLAR_BURGER_LENTA)
+        orders_before = lenta_page.get_order_list()
+        construct_page.click_construct_button()
         profile_page.login_in_main_page(login_user["email"], login_user["password"])
-        construct_page.create_order_burger(ConstructPageLocators.BUN_INGRIDIENT)
-
-        construct_page.wait_element(ConstructPageLocators.NUMBER_ORDER)
-    
-        initial_number = construct_page.find_element(ConstructPageLocators.NUMBER_ORDER).text
-    
-        construct_page.wait_text_changed(ConstructPageLocators.NUMBER_ORDER, initial_number)
-    
-        number_order_modal = construct_page.find_element(ConstructPageLocators.NUMBER_ORDER).text
-    
+        construct_page.add_bun_to_order() 
+        construct_page.wait_for_order_number()
+        initial_number = construct_page.get_order_number()
+        construct_page.wait_for_order_number_changed(initial_number)
+        number_order_modal = construct_page.get_order_number()
         number_order_normalized = number_order_modal.zfill(7)
-
-        construct_page.click_to_element_js(ConstructPageLocators.CLOSE_BUTTON_ORDER_WINDOW)
-        construct_page.wait_element_clickable(BasePageLocators.LENTA_ORDERS)
-        construct_page.click_to_element_js(BasePageLocators.LENTA_ORDERS)
-
-        lenta_page.wait_url(Urls.STELLAR_BURGER_LENTA)
-        lenta_page.wait_element(LentaPageLocators.LIST_ORDER)
-    
-        lenta_page.wait()
-    
-        orders_after = [order.text for order in lenta_page.find_elements(LentaPageLocators.LIST_ORDER)]
-    
+        construct_page.close_order_window()
+        construct_page.wait_lenta_button_clickable()
+        construct_page.click_lenta_button()
+        construct_page.wait_url(Urls.STELLAR_BURGER_LENTA)
+        orders_after = lenta_page.get_order_list()
+        construct_page.wait()
         assert number_order_normalized in orders_after

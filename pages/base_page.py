@@ -1,5 +1,6 @@
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from locators.base_page_locators import BasePageLocators
 import allure
 
 class BasePage():
@@ -25,9 +26,9 @@ class BasePage():
 
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
 
-    @allure.step('Ждем 10 секунд')
-    def wait(self):
-        WebDriverWait(self.driver, 15)
+    @allure.step('Ждем указанное количество секунд')
+    def wait(self, seconds=15):
+        WebDriverWait(self.driver, seconds)
     
     @allure.step("Ждем появления элемента")
     def wait_element(self, locator):
@@ -131,3 +132,19 @@ class BasePage():
     def wait_text_changed(self, locator, initial_text, timeout=15):
         WebDriverWait(self.driver, timeout).until(
             lambda driver: driver.find_element(*locator).text != initial_text)
+        
+    @allure.title("Нажать кнопку 'Конструктор'")
+    def click_construct_button(self):
+        self.click_to_element_js(BasePageLocators.BUTTON_CONSTRUCT)
+    
+    @allure.title("Нажать кнопку 'Лента заказов'")
+    def click_lenta_button(self):
+        self.click_to_element_js(BasePageLocators.LENTA_ORDERS)
+    
+    @allure.title("Нажать кнопку 'Личный кабинет'")
+    def click_account_button(self):
+        self.click_to_element(BasePageLocators.BUTTON_IN_ACCOUNT)
+    
+    @allure.title("Ожидать кликабельности кнопки 'Лента заказов'")
+    def wait_lenta_button_clickable(self):
+        self.wait_element_clickable(BasePageLocators.LENTA_ORDERS)
